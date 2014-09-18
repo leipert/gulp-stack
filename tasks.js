@@ -4,13 +4,7 @@ var options = require('./options.js');
 var allTasks = [];
 
 function toArray(value) {
-  if (_.isEmpty(value)) {
-    return [];
-  }
-  if (_.isArray(value)) {
-    return value;
-  }
-  return [value];
+  return _([value]).flatten().compact().value();
 }
 
 function createTask(task) {
