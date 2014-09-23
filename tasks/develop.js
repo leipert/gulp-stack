@@ -54,7 +54,7 @@ module.exports = function(options) {
         {
             name:'watch',
             work: function () {
-                var jsFilter = $.filter('**.js');
+                var jsFilter = $.filter('**/*.js');
 
                 var watch = $.watch(
                     [].concat(options.files.js).concat(options.files.css),
@@ -71,10 +71,15 @@ module.exports = function(options) {
                             });
                     });
 
-                watch.pipe(jsFilter)
+                watch
+                    .pipe(jsFilter)
                     .pipe($.jshint('.jshintrc'))
                     .pipe($.jshint.reporter('jshint-stylish'))
                     .pipe($.plumber.stop());
+
+                $.watch('app/index.html',function(files,cb){
+                    gulp.start('develop.inject',cb);
+                });
             }
         },
         {   deps: ['develop.serve', 'develop.inject']}
