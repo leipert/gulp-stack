@@ -3,85 +3,90 @@ var gulp = require('gulp');
 
 module.exports = function(options) {
 
-    var $ = options.plugins;
+  var $ = options.plugins;
 
-    return [
-        {
-            name:'$jshint',
-            work: function () {
-                return gulp.src(options.files.jsNoVendor)
-                    .pipe($.jshint('.jshintrc'))
-                    .pipe($.jshint.reporter('jshint-stylish'))
-                    .pipe($.jshint.reporter('fail'));
-            }
-        },{
-            name:'serve',
-            deps:['develop.watch','develop.inject'],
-            work: function () {
-                gulp.src(options.paths.root).pipe(
-                    $.webserver({
-                        port: 8123,
-                        livereload: true
-                    }));
-                $.open('http://localhost:8123');
-            }
-        }, {
-            name:'$serve.dist',
-            deps:['build'],
-            work: function () {
-                gulp.src(options.paths.build).pipe(
-                    $.webserver({
-                        port: 8124,
-                        livereload: false
-                    }));
-                $.open('http://localhost:8124');
-            }
-        },{
-            name:'inject',
-            work: function () {
-                return gulp.src('app/index.html')
-                    .pipe($.inject($.mergeStream(
-                        gulp.src(options.files.jsNoVendor).pipe($.angularFilesort()),
-                        gulp.src(options.files.cssNoVendor, {read: false})
-                    ), {ignorePath: options.paths.root}))
-                    .pipe($.inject(gulp.src(options.files.vendor), {
-                        ignorePath: options.paths.root,
-                        starttag: '<!-- inject:vendor:{{ext}} -->'
-                    }))
-                    .pipe(gulp.dest('.tmp/'));
-            }
-        },
-        {
-            name:'watch',
-            work: function () {
-                var jsFilter = $.filter('**/*.js');
+  return [
+    {
+      name: '$jshint',
+      work: function() {
+        return gulp.src(options.files.jsNoVendor)
+        .pipe($.jshint('.jshintrc'))
+        .pipe($.jshint.reporter('jshint-stylish'))
+        .pipe($.jshint.reporter('fail'));
+      }
+    }, {
+      name: 'serve',
+      deps: ['develop.watch', 'develop.inject'],
+      work: function() {
+        gulp.src(options.paths.root).pipe(
+        $.webserver({
+          port: 8123,
+          livereload: true
+        }));
+        $.open('http://localhost:8123');
+      }
+    }, {
+      name: '$serve.dist',
+      deps: ['build'],
+      work: function() {
+        gulp.src(options.paths.build).pipe(
+        $.webserver({
+          port: 8124,
+          livereload: false
+        }));
+        $.open('http://localhost:8124');
+      }
+    }, {
+      name: 'inject',
+      work: function() {
+        return gulp.src('app/index.html')
+        .pipe($.inject($.mergeStream(
+        gulp.src(options.files.jsNoVendor).pipe($.angularFilesort()),
+        gulp.src(options.files.cssNoVendor, {
+          read: false
+        })
+        ), {
+          ignorePath: options.paths.root
+        }))
+        .pipe($.inject(gulp.src(options.files.vendor), {
+          ignorePath: options.paths.root,
+          starttag: '<!-- inject:vendor:{{ext}} -->'
+        }))
+        .pipe(gulp.dest('.tmp/'));
+      }
+    },
+    {
+      name: 'watch',
+      work: function() {
+        var jsFilter = $.filter('**/*.js');
 
-                var watch = $.watch(
-                    [].concat(options.files.js).concat(options.files.css),
-                    function (files, cb) {
-                        var stream = files
-                            .pipe($.plumber())
-                            .pipe($.filterVinylFSByStatus(['deleted', 'renamed', 'added']))
-                            .on('data', function (data) {
-                                if (data) {
-                                    gulp.start('develop.inject', cb);
-                                } else {
-                                    stream.on('end', cb);
-                                }
-                            });
-                    });
-
-                watch
-                    .pipe(jsFilter)
-                    .pipe($.jshint('.jshintrc'))
-                    .pipe($.jshint.reporter('jshint-stylish'))
-                    .pipe($.plumber.stop());
-
-                $.watch('app/index.html',function(files,cb){
-                    gulp.start('develop.inject',cb);
-                });
+        var watch = $.watch(
+        [].concat(options.files.js).concat(options.files.css), function(files, cb) {
+          var stream = files
+          .pipe($.plumber())
+          .pipe($.filterVinylFSByStatus(['deleted', 'renamed', 'added']))
+          .on('data', function(data) {
+            if (data) {
+              gulp.start('develop.inject', cb);
+            } else {
+              stream.on('end', cb);
             }
-        },
-        {   deps: ['develop.serve', 'develop.inject']}
-    ];
+          });
+        });
+
+        watch
+        .pipe(jsFilter)
+        .pipe($.jshint('.jshintrc'))
+        .pipe($.jshint.reporter('jshint-stylish'))
+        .pipe($.plumber.stop());
+
+        $.watch('app/index.html', function(files, cb) {
+          gulp.start('develop.inject', cb);
+        });
+      }
+    },
+    {
+      deps: ['develop.serve', 'develop.inject']
+    }
+  ];
 };

@@ -1,6 +1,6 @@
 {
   "name": "gulp-stack",
-  "version": "0.0.4",
+  "version": "0.0.5",
   "description": "My gulp stack",
   "main": "index.js",
   "scripts": {
