@@ -1,12 +1,12 @@
 {
   "name": "gulp-stack",
-  "version": "0.0.7",
+  "version": "0.0.8",
   "description": "My gulp stack",
   "main": "index.js",
   "scripts": {
     "test": "echo \"test\""
   },
-  "dependencies":{
+  "dependencies": {
     "gulp": "~3.8.6",
     "gulp-angular-filesort": "~1.0.0",
     "gulp-angular-templatecache": "~1.4.1",

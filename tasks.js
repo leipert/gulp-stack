@@ -46,22 +46,6 @@ function negateMiniMatch(input) {
 
 module.exports = function(taskArray, ops) {
 
-  if (arguments.length < 2) {
-    ops = taskArray;
-    if (_.isEmpty(ops)) {
-      ops = {};
-    }
-    taskArray = [
-      'clean',
-      'test',
-      'app',
-      'vendor',
-      'static',
-      'develop',
-      'html'
-    ];
-  }
-
   options = _.merge(options, ops);
 
   var $ = options.plugins;
