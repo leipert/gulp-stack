@@ -99,5 +99,7 @@ module.exports = function(taskArray, ops) {
     });
   };
 
+  gulp.options = options;
+
   return gulp;
 };
