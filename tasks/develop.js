@@ -40,7 +40,7 @@ module.exports = function(options) {
       name: 'inject',
       work: function() {
         return gulp.src('app/index.html')
-        .pipe($.inject($.mergeStream(
+        .pipe($.inject($.streamqueue(
         gulp.src(options.files.jsNoVendor).pipe($.angularFilesort()),
         gulp.src(options.files.cssNoVendor, {
           read: false

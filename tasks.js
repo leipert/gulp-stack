@@ -53,7 +53,6 @@ module.exports = function(taskArray, ops) {
   options.paths.root = options.paths.root.concat(process.cwd());
 
   options.files = _.mapValues(options.files, toArray);
-  options.injectInto = _.mapValues(options.injectInto, toArray);
 
   var negatedVendors = negateMiniMatch(options.files.vendor);
 
@@ -70,6 +69,19 @@ module.exports = function(taskArray, ops) {
 
   options.files.jsNoVendor = options.files.js.concat(negatedVendors);
   options.files.cssNoVendor = options.files.css.concat(negatedVendors);
+
+  options.injectInto = _.mapValues(options.injectInto, function(injectables) {
+    if (_.isObject(injectables) && (injectables.hasOwnProperty('pre') || injectables.hasOwnProperty('post'))) {
+      return {
+        pre: toArray(injectables.pre),
+        post: toArray(injectables.post)
+      }
+    }
+    return {
+      pre: [],
+      post: toArray(injectables)
+    }
+  });
 
   _.forEach(taskArray, function(name) {
     var task = require('./tasks/' + name);

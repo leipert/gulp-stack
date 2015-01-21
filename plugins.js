@@ -8,7 +8,7 @@ var $ = require('gulp-load-plugins')({
   pattern: [
     'gulp-*',
     'main-bower-files',
-    'merge-stream',
+    'streamqueue',
     'lazypipe',
     'open'
   ]

@@ -30,9 +30,9 @@
     "lazypipe": "~0.2.1",
     "lodash": "https://github.com/lodash/lodash/tarball/master",
     "main-bower-files": "~2.4.0",
-    "merge-stream": "~0.1.5",
     "open": "~0.0.5",
     "rimraf": "~2.2.8",
+    "streamqueue": "~0.1.1",
     "through": "~2.3.4"
   },
   "repository": {

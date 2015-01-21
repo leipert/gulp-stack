@@ -1,6 +1,17 @@
 var _ = require('lodash');
 var gulp = require('gulp');
 
+function injectIntoStream(stream, injectables) {
+
+  _.forEach(injectables, function(c) {
+    if (_.isFunction(c)) {
+      stream.queue(c());
+    } else {
+      stream.queue(c);
+    }
+  });
+}
+
 module.exports = function(options) {
   var $ = options.plugins;
 
@@ -15,30 +26,25 @@ module.exports = function(options) {
       deps: ['clean'],
       // Takes all app javascript files, angular templates and concats and minifies them
       work: function() {
-        var stream = $.mergeStream();
+        var stream = new $.streamqueue();
 
+        injectIntoStream(stream, options.injectInto.js.pre);
 
         // App files without vendor files
-        stream.add(gulp.src(options.files.jsNoVendor));
+        stream.queue(gulp.src(options.files.jsNoVendor));
 
         //Angular template files
-        stream.add(
+        stream.queue(
         gulp.src(options.files.partials)
         .pipe($.htmlMinify())
         .pipe($.angularTemplatecache(options.templateCacheOptions))
         );
 
-
         //Optionally injected additional javascript sourcecode
-        _.forEach(options.injectInto.js, function(c) {
-          if (_.isFunction(c)) {
-            stream.add(c());
-          } else {
-            stream.add(c);
-          }
-        });
+        injectIntoStream(stream, options.injectInto.js.post);
 
         return stream
+        .done()
         .pipe($.angularFilesort())
         .pipe($.concat(options.output.js.app))
         .pipe(gulp.dest('.tmp/testing')) //TODO: refactor tests
@@ -52,23 +58,19 @@ module.exports = function(options) {
       // Takes all app css files and concats and minfies them
       work: function() {
 
-        var stream = $.mergeStream();
+        var stream = $.streamqueue();
 
+        injectIntoStream(stream, options.injectInto.css.pre);
         // App files without vendor files
-        stream.add(gulp.src(options.files.cssNoVendor));
+        stream.queue(gulp.src(options.files.cssNoVendor));
 
         //Optionally injected additional css sourcecode
-        _.forEach(options.injectInto.css, function(c) {
-          if (_.isFunction(c)) {
-            stream.add(c());
-          } else {
-            stream.add(c);
-          }
-        });
+        injectIntoStream(stream, options.injectInto.css.post);
 
         return stream
+        .done()
         .pipe($.concat(options.output.css.app))
-        .pipe($.cssMinify())
+        //.pipe($.cssMinify())
         .pipe(gulp.dest(options.paths.build + options.output.css.path));
       }
     }
