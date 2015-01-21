@@ -26,8 +26,11 @@ module.exports = function(options) {
       deps: ['clean'],
       // Takes all app javascript files, angular templates and concats and minifies them
       work: function() {
-        var stream = new $.streamqueue();
+        var stream = new $.streamqueue({
+          objectMode: true
+        });
 
+        //Optionally injected additional javascript sourcecode
         injectIntoStream(stream, options.injectInto.js.pre);
 
         // App files without vendor files
@@ -58,9 +61,13 @@ module.exports = function(options) {
       // Takes all app css files and concats and minfies them
       work: function() {
 
-        var stream = $.streamqueue();
+        var stream = new $.streamqueue({
+          objectMode: true
+        });
 
+        //Optionally injected additional css sourcecode
         injectIntoStream(stream, options.injectInto.css.pre);
+
         // App files without vendor files
         stream.queue(gulp.src(options.files.cssNoVendor));
 
@@ -70,7 +77,7 @@ module.exports = function(options) {
         return stream
         .done()
         .pipe($.concat(options.output.css.app))
-        //.pipe($.cssMinify())
+        .pipe($.cssMinify())
         .pipe(gulp.dest(options.paths.build + options.output.css.path));
       }
     }
