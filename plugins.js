@@ -31,7 +31,7 @@ $.cssMinify = $.lazypipe()
 
 $.htmlMinify = $.lazypipe()
 .pipe($.htmlmin, {
-  collapseBooleanAttributes: true,
+  collapseBooleanAttributes: false,
   collapseWhitespace: true,
   removeAttributeQuotes: true,
   removeComments: true,
