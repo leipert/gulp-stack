@@ -60,30 +60,34 @@ module.exports = function(options) {
     {
       name: 'watch',
       work: function() {
-        var jsFilter = $.filter('**/*.js');
 
-        var watch = $.watch(
-        [].concat(options.files.js).concat(options.files.css), function(files, cb) {
-          var stream = files
-          .pipe($.plumber())
-          .pipe($.filterVinylFSByStatus(['deleted', 'renamed', 'added']))
-          .on('data', function(data) {
-            if (data) {
-              gulp.start('develop.inject', cb);
-            } else {
-              stream.on('end', cb);
-            }
-          });
-        });
+        $.watch(
+        options.files.js.concat(options.files.css),
+        {
+          read: false,
+          events: ['add', 'unlink']
+        }, function() {
+          gulp.start('develop.inject');
+        }
+        );
 
-        watch
-        .pipe(jsFilter)
+        $.watch(
+        options.files.jsNoVendor,
+        {
+          events: ['change']
+        }
+        )
         .pipe($.jshint('.jshintrc'))
         .pipe($.jshint.reporter('jshint-stylish'))
         .pipe($.plumber.stop());
 
-        $.watch('app/index.html', function(files, cb) {
-          gulp.start('develop.inject', cb);
+        $.watch(
+        'app/index.html',
+        {
+          read: false,
+          events: ['change']
+        }, function() {
+          gulp.start('develop.inject');
         });
       }
     },
