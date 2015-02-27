@@ -46,6 +46,8 @@ function negateMiniMatch(input) {
 
 module.exports = function (taskArray, ops) {
 
+    options.files = _.mapValues(options.files, toArray);
+
     options = _.merge(options, ops);
 
     var $ = options.plugins;
