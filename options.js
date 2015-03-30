@@ -6,6 +6,7 @@ module.exports = {
         css: 'app/**/*.css',
         test: 'app/**/*.spec.js',
         vendor: 'app/vendor/**/*.{css,js}',
+        watch: [],
         'static': []
     },
     paths: {
@@ -29,7 +30,6 @@ module.exports = {
         }
     },
     webserver: {
-        host: 'localhost',
         port: 8123,
         https: false
     },

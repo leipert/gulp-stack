@@ -1,5 +1,6 @@
 var _ = require('lodash');
 var rp = require('request-promise');
+var browserSync = require('browser-sync');
 
 module.exports = function (gulp, options) {
 
@@ -25,29 +26,25 @@ module.exports = function (gulp, options) {
             deps: ['develop.watch', 'develop.inject'],
             work: function () {
 
-                options.webserver.livereload = {
-                    enable: true,
-                    port: 35729
+                options.webserver.server = {
+                    baseDir: options.paths.root
                 };
-                options.webserver.path = options.paths.root;
 
-                getWebserverOptions(options)
-                    .then(startWebserver);
+                startWebserver(options.webserver,'Serving develop!');
+
 
             }
         }, {
-            name: '$serve.dist',
+            name: '$serve',
             deps: serveDistDeps,
             work: function () {
 
-                var webServerOptions = getWebserverOptions(options);
+                options.webserver.server = {
+                    baseDir: options.paths.build
+                };
 
-                options.webserver.livereload = false;
-                options.webserver.port += 1;
-                options.webserver.path = options.paths.build;
+                startWebserver(options.webserver,'Serving compiled!');
 
-                getWebserverOptions(options)
-                    .then(startWebserver);
             }
         }, {
             name: 'inject',
@@ -73,33 +70,47 @@ module.exports = function (gulp, options) {
                         ignorePath: options.paths.root,
                         starttag: '<!-- inject:vendor:{{ext}} -->'
                     }))
-                    .pipe(gulp.dest('.tmp/'));
+                    .pipe(gulp.dest('.tmp/'))
+                    .pipe($.reload({stream: true}))
+                    ;
             }
         },
         {
             name: 'watch',
             work: function () {
 
+                var watch = options.files.js
+                    .concat(options.files.css)
+                    .concat(options.files.watch)
+
                 $.watch(
-                    options.files.js.concat(options.files.css),
+                    watch,
                     {
                         read: false,
                         events: ['add', 'unlink']
-                    }, function (vinyl) {
-                        console.warn(vinyl);
+                    }, function () {
                         gulp.start('develop.inject');
                     }
                 );
+
+                gulp.watch(watch).on('change', function (events) {
+                    if (events.type === 'changed') {
+                        $.reload(events.path)
+                    }
+
+                });
 
                 $.watch(
                     options.files.jsNoVendor,
                     {
                         events: ['change']
                     }
-                ).pipe($.plumber())
+                )
+                    .pipe($.plumber())
                     .pipe($.jshint('.jshintrc'))
                     .pipe($.jshint.reporter('jshint-stylish'))
-                    .pipe($.plumber.stop());
+                    .pipe($.plumber.stop())
+                ;
 
                 $.watch(
                     'app/index.html',
@@ -116,38 +127,11 @@ module.exports = function (gulp, options) {
         }
     ];
 
-    function getWebserverOptions(options) {
-
-        var url = buildURL(options.webserver);
-
-        var promise = rp(url)
-            .then(function () {
-                options.webserver.port += 2;
-                if (_.isObject(options.webserver.livereload)) {
-                    options.webserver.livereload.port += 2;
-                }
-                return getWebserverOptions(options);
-            })
-            .catch(function () {
-                return options.webserver;
-            });
-
-        return promise;
-    }
-
-    function buildURL(options) {
-
-        var protocol = options.https ? 'https:' : 'http:';
-
-        return protocol + '//localhost:' + options.port;
-
-    }
-
-    function startWebserver(wsOptions) {
-        gulp.src(wsOptions.path)
-            .pipe($.webserver(wsOptions));
-
-        $.open(buildURL(wsOptions));
+    function startWebserver(config,message) {
+        var foo = browserSync(config)
+        setTimeout(function(){
+            browserSync.notify(message, 5000);
+        },2000)
     }
 
 

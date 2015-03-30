@@ -4,6 +4,8 @@ var through = require('through');
 
 var path = require('path');
 
+var browserSync = require('browser-sync');
+
 module.exports = function (gulp) {
     var $ = require('gulp-load-plugins')({
         pattern: [
@@ -11,11 +13,19 @@ module.exports = function (gulp) {
             'main-bower-files',
             'streamqueue',
             'lazypipe',
-            'open',
             'del',
             'vinyl-paths'
         ]
     });
+
+    $.reload = browserSync.reload;
+
+    $.errorHandler = function(error) {
+        // Output an error message
+        $.util.log($.util.colors.red('Error (' + error.plugin + '): ' + error.message));
+        // emit the end event, to properly end the task
+        this.emit('end');
+    };
 
     $.jsMinify = $.lazypipe()
         .pipe($.ngAnnotate)

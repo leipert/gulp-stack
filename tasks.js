@@ -31,8 +31,6 @@ module.exports = function (gulp, taskArray, ops) {
 
     options.plugins = $;
 
-    options.paths.root = options.paths.root.concat(process.cwd());
-
     options.files = _.mapValues(options.files, toArray);
 
     var negatedVendors = negateMiniMatch(options.files.vendor);
