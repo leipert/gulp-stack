@@ -19,7 +19,7 @@ module.exports = function (gulp, options) {
 
                 return gulp.src(options.files.html)
                     .pipe($.template(template))
-                    //.pipe($.htmlMinify())
+                    .pipe($.htmlMinify())
                     .pipe(gulp.dest(options.paths.build));
 
                 function genTemplate(type, dir, file) {
