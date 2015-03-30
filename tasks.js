@@ -77,12 +77,12 @@ module.exports = function (taskArray, ops) {
             return {
                 pre: toArray(injectables.pre),
                 post: toArray(injectables.post)
-            }
+            };
         }
         return {
             pre: [],
             post: toArray(injectables)
-        }
+        };
     });
 
     _.forEach(taskArray, function (name) {

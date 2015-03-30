@@ -28,6 +28,11 @@ module.exports = {
             vendor: 'assets.css'
         }
     },
+    webserver: {
+        host: 'localhost',
+        port: 8123,
+        https: false
+    },
     bower: false, // true or string
     templateCacheOptions: {},
     plugins: require('./plugins.js')

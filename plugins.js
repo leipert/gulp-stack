@@ -14,6 +14,8 @@ var $ = require('gulp-load-plugins')({
     ]
 });
 
+$.dest = gulp.dest;
+
 $.jsMinify = $.lazypipe()
     .pipe($.ngAnnotate)
     .pipe($.uglify)

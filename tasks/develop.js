@@ -1,5 +1,6 @@
 var _ = require('lodash');
 var gulp = require('gulp');
+var rp = require('request-promise');
 
 module.exports = function (options) {
 
@@ -18,23 +19,28 @@ module.exports = function (options) {
             name: 'serve',
             deps: ['develop.watch', 'develop.inject'],
             work: function () {
-                gulp.src(options.paths.root).pipe(
-                    $.webserver({
-                        port: 8123,
-                        livereload: true
-                    }));
-                $.open('http://localhost:8123');
+
+                options.webserver.livereload = {
+                    enable: true,
+                    port: 35729
+                };
+
+                getWebserverOptions(options)
+                    .then(startWebserver);
+
             }
         }, {
             name: '$serve.dist',
             deps: ['build'],
             work: function () {
-                gulp.src(options.paths.build).pipe(
-                    $.webserver({
-                        port: 8124,
-                        livereload: false
-                    }));
-                $.open('http://localhost:8124');
+
+                var webServerOptions = getWebserverOptions(options);
+
+                options.webserver.livereload = false;
+                options.webserver.port += 1;
+
+                getWebserverOptions(options)
+                    .then(startWebserver);
             }
         }, {
             name: 'inject',
@@ -43,7 +49,13 @@ module.exports = function (options) {
                     .pipe($.inject($.streamqueue({
                             objectMode: true
                         },
-                        gulp.src(options.files.jsNoVendor).pipe($.angularFilesort()),
+                        //gulp.src(options.files.jsNoVendor),
+                        gulp.src(options.files.jsNoVendor)
+                            .pipe($.plumber())
+                            .pipe($.jshint('.jshintrc'))
+                            .pipe($.jshint.reporter('jshint-stylish'))
+                            .pipe($.angularFilesort())
+                            .pipe($.plumber.stop()),
                         gulp.src(options.files.cssNoVendor, {
                             read: false
                         })
@@ -66,7 +78,8 @@ module.exports = function (options) {
                     {
                         read: false,
                         events: ['add', 'unlink']
-                    }, function () {
+                    }, function (vinyl) {
+                        console.warn(vinyl);
                         gulp.start('develop.inject');
                     }
                 );
@@ -76,7 +89,7 @@ module.exports = function (options) {
                     {
                         events: ['change']
                     }
-                )
+                ).pipe($.plumber())
                     .pipe($.jshint('.jshintrc'))
                     .pipe($.jshint.reporter('jshint-stylish'))
                     .pipe($.plumber.stop());
@@ -95,4 +108,40 @@ module.exports = function (options) {
             deps: ['develop.serve', 'develop.inject']
         }
     ];
+
+    function getWebserverOptions(options) {
+
+        var url = buildURL(options.webserver);
+
+        var promise = rp(url)
+            .then(function () {
+                options.webserver.port += 2;
+                if (_.isObject(options.webserver.livereload)) {
+                    options.webserver.livereload.port += 2;
+                }
+                return getWebserverOptions(options);
+            })
+            .catch(function () {
+                return options.webserver;
+            });
+
+        return promise;
+    }
+
+    function buildURL(options) {
+
+        var protocol = options.https ? 'https:' : 'http:';
+
+        return protocol + '//localhost:' + options.port;
+
+    }
+
+    function startWebserver(wsOptions) {
+        gulp.src(options.paths.root)
+            .pipe($.webserver(wsOptions));
+
+        $.open(buildURL(wsOptions));
+    }
+
+
 };
