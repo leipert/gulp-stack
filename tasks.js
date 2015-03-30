@@ -1,34 +1,9 @@
 var _ = require('lodash');
-var gulp = require('gulp');
 var options = require('./options.js');
 var allTasks = [];
 
 function toArray(value) {
     return _([value]).flatten().compact().value();
-}
-
-function createTask(task) {
-
-    task.deps = toArray(task.deps);
-
-    if (task.deps) {
-        gulp.task(task.name, task.deps, task.work);
-    } else {
-        gulp.task(task.name, task.work);
-    }
-
-    allTasks.push(task);
-}
-
-function $createTasksFromFile(prefix) {
-    return function (task) {
-        if (_.startsWith(task.name, '$')) {
-            task.name = task.name.substr(1);
-        } else if (_.isString(prefix)) {
-            task.name = _.isString(task.name) ? prefix + '.' + task.name : prefix;
-        }
-        createTask(task);
-    };
 }
 
 function negateMiniMatch(input) {
@@ -44,13 +19,17 @@ function negateMiniMatch(input) {
     return negateMiniMatch(toArray(input));
 }
 
-module.exports = function (taskArray, ops) {
-
+module.exports = function (gulp, taskArray, ops) {
+    options.taskArray = taskArray;
     options.files = _.mapValues(options.files, toArray);
-
+    if(!_.contains(options.taskArray,'rev')){
+        options.rev = false;
+    }
     options = _.merge(options, ops);
 
-    var $ = options.plugins;
+    var $ = require('./plugins.js')(gulp);
+
+    options.plugins = $;
 
     options.paths.root = options.paths.root.concat(process.cwd());
 
@@ -85,11 +64,13 @@ module.exports = function (taskArray, ops) {
         };
     });
 
-    _.forEach(taskArray, function (name) {
-        var task = require('./tasks/' + name);
+    var tasksToBeLoaded = {};
 
+    _.forEach(options.taskArray, requireTaskAndDeps);
+
+    _.forEach(tasksToBeLoaded, function (task, name) {
         if (_.isFunction(task)) {
-            task = task(options);
+            task = task(gulp, options);
         }
 
         if (!_.isArray(task)) {
@@ -97,23 +78,49 @@ module.exports = function (taskArray, ops) {
                 work: task
             }];
         }
+
         _.forEach(task, $createTasksFromFile(name, task));
     });
 
-    var task = require('./tasks/help')(allTasks, options);
+    var helpTask = require('./tasks/help')(allTasks, options);
 
-    _.forEach(task, $createTasksFromFile('help'));
-
-    gulp.newTask = function (name, deps, work, description) {
-        createTask({
-            name: name,
-            deps: deps,
-            desc: description,
-            work: work
-        });
-    };
-
-    gulp.options = options;
+    _.forEach(helpTask, $createTasksFromFile('help'));
 
     return gulp;
+
+    function requireTaskAndDeps(name){
+        if(!tasksToBeLoaded.hasOwnProperty(name)){
+            var task = require('./tasks/' + name);
+            if(_.isObject(task) && !_.isFunction(task)){
+                _.forEach(toArray(task.deps),requireTaskAndDeps);
+                task = task.task;
+            }
+            tasksToBeLoaded[name] = task;
+        }
+    }
+
+    function $createTasksFromFile(prefix) {
+        return function (task) {
+            if (_.startsWith(task.name, '$')) {
+                task.name = task.name.substr(1);
+            } else if (_.isString(prefix)) {
+                task.name = _.isString(task.name) ? prefix + '.' + task.name : prefix;
+            }
+            createTask(task);
+        };
+    }
+
+    function createTask(task) {
+
+        task.deps = _.union(toArray(task.deps),toArray(options.deps[task.name]));
+
+        if (task.deps) {
+            gulp.task(task.name, task.deps, task.work);
+        } else {
+            gulp.task(task.name, task.work);
+        }
+
+        allTasks.push(task);
+    }
+
 };

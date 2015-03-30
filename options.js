@@ -33,7 +33,7 @@ module.exports = {
         port: 8123,
         https: false
     },
+    rev: true,
     bower: false, // true or string
-    templateCacheOptions: {},
-    plugins: require('./plugins.js')
+    templateCacheOptions: {}
 };

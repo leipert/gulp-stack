@@ -1,65 +1,93 @@
-var gulp = require('gulp');
 var _ = require('lodash');
 
 var through = require('through');
 
+var path = require('path');
 
-var $ = require('gulp-load-plugins')({
-    pattern: [
-        'gulp-*',
-        'main-bower-files',
-        'streamqueue',
-        'lazypipe',
-        'open'
-    ]
-});
-
-$.dest = gulp.dest;
-
-$.jsMinify = $.lazypipe()
-    .pipe($.ngAnnotate)
-    .pipe($.uglify)
-    .pipe($.rev);
-
-$.cssMinify = $.lazypipe()
-    .pipe($.autoprefixer, {
-        browsers: ['> 1%', 'last 4 versions', 'Firefox ESR', 'Opera 12.1'],
-        cascade: true
-    })
-    .pipe($.minifyCss, {
-        keepSpecialComments: 0
-    })
-    .pipe($.rev);
-
-$.htmlMinify = $.lazypipe()
-    .pipe($.htmlmin, {
-        collapseBooleanAttributes: false,
-        collapseWhitespace: true,
-        removeAttributeQuotes: true,
-        removeComments: true,
-        removeEmptyAttributes: true,
-        removeRedundantAttributes: true
+module.exports = function (gulp) {
+    var $ = require('gulp-load-plugins')({
+        pattern: [
+            'gulp-*',
+            'main-bower-files',
+            'streamqueue',
+            'lazypipe',
+            'open',
+            'del',
+            'vinyl-paths'
+        ]
     });
 
+    $.jsMinify = $.lazypipe()
+        .pipe($.ngAnnotate)
+        .pipe($.uglify);
 
-$.filterVinylFSByStatus = function (statuses) {
-    var count = false;
+    $.cssMinify = $.lazypipe()
+        .pipe($.autoprefixer, {
+            browsers: ['> 1%', 'last 4 versions', 'Firefox ESR', 'Opera 12.1'],
+            cascade: true
+        })
+        .pipe($.minifyCss, {
+            keepSpecialComments: 0
+        });
 
-    if (!_.isArray(statuses)) {
-        statuses = [statuses];
+    $.generateOutPipe = function (baseDir, relDir, name, rev, pipe) {
+        var dir = path.join(baseDir, relDir);
+
+        var output;
+
+        if (rev) {
+            output = generateRevOutPipe(dir, baseDir, name);
+        } else {
+            output = $.lazypipe().pipe(gulp.dest, dir)
+        }
+        if (!!pipe) {
+            output = $.lazypipe().pipe(pipe).pipe(output);
+        }
+
+        return output;
+
     }
 
-    function countFiles(file) {
-        count = count || _.contains(statuses, file.event);
+    function generateRevOutPipe(dir, baseDir, name) {
+        return $.lazypipe()
+            .pipe($.rev)
+            .pipe(gulp.dest, dir)
+            .pipe($.rev.manifest, 'rev-' + name + '.json', {
+                merge: true
+            })
+            .pipe(gulp.dest, baseDir);
     }
 
-    function endStream() {
-        this.emit('data', count);
-        count = false;
-        this.emit('end');
-    }
+    $.htmlMinify = $.lazypipe()
+        .pipe($.htmlmin, {
+            collapseBooleanAttributes: false,
+            collapseWhitespace: true,
+            removeAttributeQuotes: true,
+            removeComments: true,
+            removeEmptyAttributes: true,
+            removeRedundantAttributes: true
+        });
 
-    return through(countFiles, endStream);
-};
 
-module.exports = $;
+    $.filterVinylFSByStatus = function (statuses) {
+        var count = false;
+
+        if (!_.isArray(statuses)) {
+            statuses = [statuses];
+        }
+
+        function countFiles(file) {
+            count = count || _.contains(statuses, file.event);
+        }
+
+        function endStream() {
+            this.emit('data', count);
+            count = false;
+            this.emit('end');
+        }
+
+        return through(countFiles, endStream);
+    };
+
+    return $;
+}

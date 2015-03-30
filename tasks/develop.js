@@ -1,12 +1,17 @@
 var _ = require('lodash');
-var gulp = require('gulp');
 var rp = require('request-promise');
 
-module.exports = function (options) {
+module.exports = function (gulp, options) {
 
     var $ = options.plugins;
 
+    var serveDistDeps = _.intersection(options.taskArray, ['html', 'rev']);
+
     return [
+        {
+            name: '$build',
+            deps: _.union(serveDistDeps, ['jshint'])
+        },
         {
             name: '$jshint',
             work: function () {
@@ -24,6 +29,7 @@ module.exports = function (options) {
                     enable: true,
                     port: 35729
                 };
+                options.webserver.path = options.paths.root;
 
                 getWebserverOptions(options)
                     .then(startWebserver);
@@ -31,13 +37,14 @@ module.exports = function (options) {
             }
         }, {
             name: '$serve.dist',
-            deps: ['build'],
+            deps: serveDistDeps,
             work: function () {
 
                 var webServerOptions = getWebserverOptions(options);
 
                 options.webserver.livereload = false;
                 options.webserver.port += 1;
+                options.webserver.path = options.paths.build;
 
                 getWebserverOptions(options)
                     .then(startWebserver);
@@ -137,7 +144,7 @@ module.exports = function (options) {
     }
 
     function startWebserver(wsOptions) {
-        gulp.src(options.paths.root)
+        gulp.src(wsOptions.path)
             .pipe($.webserver(wsOptions));
 
         $.open(buildURL(wsOptions));

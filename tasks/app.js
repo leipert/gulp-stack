@@ -1,5 +1,4 @@
 var _ = require('lodash');
-var gulp = require('gulp');
 
 function injectIntoStream(stream, injectables) {
 
@@ -12,13 +11,14 @@ function injectIntoStream(stream, injectables) {
     });
 }
 
-module.exports = function (options) {
+module.exports = function (gulp, options) {
+
     var $ = options.plugins;
 
     return [
         // Creates 'app' task with given dependencies
         {
-            deps: ['app.js', 'app.css']
+            deps: ['app.css', 'app.js']
         },
         // Creates 'app.js' task with dependencies and work function
         {
@@ -50,8 +50,7 @@ module.exports = function (options) {
                     .done()
                     .pipe($.angularFilesort())
                     .pipe($.concat(options.output.js.app))
-                    .pipe($.jsMinify())
-                    .pipe(gulp.dest(options.paths.build + options.output.js.path));
+                    .pipe($.generateOutPipe(options.paths.build, options.output.js.path, 'app.js', options.rev, $.jsMinify)());
             }
         },
         {
@@ -76,8 +75,7 @@ module.exports = function (options) {
                 return stream
                     .done()
                     .pipe($.concat(options.output.css.app))
-                    .pipe($.cssMinify())
-                    .pipe(gulp.dest(options.paths.build + options.output.css.path));
+                    .pipe($.generateOutPipe(options.paths.build, options.output.css.path, 'app.css', options.rev, $.cssMinify)());
             }
         }
 
