@@ -20,6 +20,43 @@ function negateMiniMatch(input) {
 }
 
 module.exports = function (gulp, taskArray, ops) {
+
+    function requireTaskAndDeps(name){
+        if(!tasksToBeLoaded.hasOwnProperty(name)){
+            var task = require('./tasks/' + name);
+            if(_.isObject(task) && !_.isFunction(task)){
+                _.forEach(toArray(task.deps),requireTaskAndDeps);
+                task = task.task;
+            }
+            tasksToBeLoaded[name] = task;
+        }
+    }
+
+    function $createTasksFromFile(prefix) {
+        return function (task) {
+            if (_.startsWith(task.name, '$')) {
+                task.name = task.name.substr(1);
+            } else if (_.isString(prefix)) {
+                task.name = _.isString(task.name) ? prefix + '.' + task.name : prefix;
+            }
+            createTask(task);
+        };
+    }
+
+    function createTask(task) {
+
+        task.deps = _.union(toArray(task.deps),toArray(options.deps[task.name]));
+
+        if (task.deps) {
+            gulp.task(task.name, task.deps, task.work);
+        } else {
+            gulp.task(task.name, task.work);
+        }
+
+        allTasks.push(task);
+    }
+
+
     options.taskArray = taskArray;
     options.files = _.mapValues(options.files, toArray);
     if(!_.contains(options.taskArray,'rev')){
@@ -85,40 +122,5 @@ module.exports = function (gulp, taskArray, ops) {
     _.forEach(helpTask, $createTasksFromFile('help'));
 
     return gulp;
-
-    function requireTaskAndDeps(name){
-        if(!tasksToBeLoaded.hasOwnProperty(name)){
-            var task = require('./tasks/' + name);
-            if(_.isObject(task) && !_.isFunction(task)){
-                _.forEach(toArray(task.deps),requireTaskAndDeps);
-                task = task.task;
-            }
-            tasksToBeLoaded[name] = task;
-        }
-    }
-
-    function $createTasksFromFile(prefix) {
-        return function (task) {
-            if (_.startsWith(task.name, '$')) {
-                task.name = task.name.substr(1);
-            } else if (_.isString(prefix)) {
-                task.name = _.isString(task.name) ? prefix + '.' + task.name : prefix;
-            }
-            createTask(task);
-        };
-    }
-
-    function createTask(task) {
-
-        task.deps = _.union(toArray(task.deps),toArray(options.deps[task.name]));
-
-        if (task.deps) {
-            gulp.task(task.name, task.deps, task.work);
-        } else {
-            gulp.task(task.name, task.work);
-        }
-
-        allTasks.push(task);
-    }
 
 };

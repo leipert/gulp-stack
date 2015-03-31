@@ -48,7 +48,7 @@ module.exports = function (gulp) {
         if (rev) {
             output = generateRevOutPipe(dir, baseDir, name);
         } else {
-            output = $.lazypipe().pipe(gulp.dest, dir)
+            output = $.lazypipe().pipe(gulp.dest, dir);
         }
         if (!!pipe) {
             output = $.lazypipe().pipe(pipe).pipe(output);
@@ -56,7 +56,7 @@ module.exports = function (gulp) {
 
         return output;
 
-    }
+    };
 
     function generateRevOutPipe(dir, baseDir, name) {
         return $.lazypipe()
@@ -100,4 +100,4 @@ module.exports = function (gulp) {
     };
 
     return $;
-}
+};
