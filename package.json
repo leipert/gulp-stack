@@ -34,7 +34,6 @@
     "main-bower-files": "~2.6.0",
     "request-promise": "^0.4.1",
     "streamqueue": "~0.1.1",
-    "through": "~2.3.4",
     "vinyl-paths": "^1.0.0"
   },
   "repository": {

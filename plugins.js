@@ -1,7 +1,5 @@
 var _ = require('lodash');
 
-var through = require('through');
-
 var path = require('path');
 
 var browserSync = require('browser-sync');
@@ -77,27 +75,6 @@ module.exports = function (gulp) {
             removeEmptyAttributes: true,
             removeRedundantAttributes: true
         });
-
-
-    $.filterVinylFSByStatus = function (statuses) {
-        var count = false;
-
-        if (!_.isArray(statuses)) {
-            statuses = [statuses];
-        }
-
-        function countFiles(file) {
-            count = count || _.contains(statuses, file.event);
-        }
-
-        function endStream() {
-            this.emit('data', count);
-            count = false;
-            this.emit('end');
-        }
-
-        return through(countFiles, endStream);
-    };
 
     return $;
 };
