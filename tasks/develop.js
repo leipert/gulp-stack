@@ -26,11 +26,11 @@ module.exports = function (gulp, options) {
             deps: ['develop.watch', 'develop.inject'],
             work: function () {
 
-                options.webserver.server = {
+                options.webserver.server = _.assign(options.webserver.server, {
                     baseDir: options.paths.root
-                };
+                });
 
-                startWebserver(options.webserver,'Serving develop!');
+                startWebserver(options.webserver, 'Serving develop!');
 
 
             }
@@ -39,11 +39,11 @@ module.exports = function (gulp, options) {
             deps: serveDistDeps,
             work: function () {
 
-                options.webserver.server = {
-                    baseDir: options.paths.build
-                };
+                options.webserver.server = _.assign(options.webserver.server, {
+                    baseDir: options.paths.root
+                });
 
-                startWebserver(options.webserver,'Serving compiled!');
+                startWebserver(options.webserver, 'Serving compiled!');
 
             }
         }, {
@@ -53,7 +53,7 @@ module.exports = function (gulp, options) {
                     .pipe($.inject($.streamqueue({
                             objectMode: true
                         },
-                        //gulp.src(options.files.jsNoVendor),
+
                         gulp.src(options.files.jsNoVendor)
                             .pipe($.plumber())
                             .pipe($.jshint('.jshintrc'))
@@ -127,11 +127,12 @@ module.exports = function (gulp, options) {
         }
     ];
 
-    function startWebserver(config,message) {
+    function startWebserver(config, message) {
+        console.warn(config);
         var foo = browserSync(config)
-        setTimeout(function(){
+        setTimeout(function () {
             browserSync.notify(message, 5000);
-        },2000)
+        }, 2000)
     }
 
 
