@@ -49,7 +49,7 @@ module.exports = function (gulp, options) {
         }, {
             name: 'inject',
             work: function () {
-                return gulp.src('app/index.html')
+                return gulp.src(options.files.html)
                     .pipe($.inject($.streamqueue({
                             objectMode: true
                         },
@@ -113,7 +113,7 @@ module.exports = function (gulp, options) {
                 ;
 
                 $.watch(
-                    'app/index.html',
+                    options.files.html,
                     {
                         read: false,
                         events: ['change']

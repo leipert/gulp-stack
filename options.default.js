@@ -29,6 +29,8 @@ module.exports = {
             vendor: 'assets.css'
         }
     },
+    deps: {
+    },
     webserver: {
         port: 8123,
         https: false
