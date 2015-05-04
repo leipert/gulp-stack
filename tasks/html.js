@@ -1,5 +1,5 @@
 var _ = require('lodash');
-var path = require('path');
+var urljoin = require('path');
 
 module.exports = function (gulp, options) {
     var $ = options.plugins;
@@ -24,7 +24,7 @@ module.exports = function (gulp, options) {
 
                 function genTemplate(type, dir, file) {
 
-                    dir = path.join(dir, file).replace(/^\//, '');
+                    dir = urljoin(dir, file).replace(/^\//, '');
 
                     if (type === 'css') {
                         dir = '<link rel="stylesheet" href="' + dir + '">'

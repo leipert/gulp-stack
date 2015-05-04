@@ -1,6 +1,6 @@
 {
   "name": "gulp-stack",
-  "version": "0.6.2",
+  "version": "0.6.3",
   "description": "My gulp stack",
   "main": "index.js",
   "scripts": {
@@ -34,6 +34,7 @@
     "main-bower-files": "~2.6.0",
     "request-promise": "^0.4.1",
     "streamqueue": "~0.1.1",
+    "urljoin": "^0.1.5",
     "vinyl-paths": "^1.0.0"
   },
   "repository": {
