@@ -33,7 +33,8 @@ module.exports = {
     },
     webserver: {
         port: 8123,
-        https: false
+        https: false,
+        server: {}
     },
     rev: true,
     bower: false, // true or string

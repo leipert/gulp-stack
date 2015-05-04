@@ -26,7 +26,7 @@ module.exports = function (gulp, options) {
             deps: ['develop.watch', 'develop.inject'],
             work: function () {
 
-                options.webserver.server = _.assign(options.webserver.server, {
+                options.webserver.server = _.assign({}, options.webserver.server, {
                     baseDir: options.paths.root
                 });
 
@@ -39,8 +39,8 @@ module.exports = function (gulp, options) {
             deps: serveDistDeps,
             work: function () {
 
-                options.webserver.server = _.assign(options.webserver.server, {
-                    baseDir: options.paths.root
+                options.webserver.server = _.assign({}, options.webserver.server, {
+                    baseDir: options.paths.build
                 });
 
                 startWebserver(options.webserver, 'Serving compiled!');
@@ -128,7 +128,6 @@ module.exports = function (gulp, options) {
     ];
 
     function startWebserver(config, message) {
-        console.warn(config);
         var foo = browserSync(config)
         setTimeout(function () {
             browserSync.notify(message, 5000);
