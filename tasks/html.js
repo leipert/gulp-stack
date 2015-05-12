@@ -1,5 +1,5 @@
 var _ = require('lodash');
-var urljoin = require('path');
+var urljoin = require('urljoin');
 
 module.exports = function (gulp, options) {
     var $ = options.plugins;
