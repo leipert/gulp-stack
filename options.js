@@ -40,9 +40,16 @@ module.exports = function(gulp, $, taskArray, ops){
 
     if (!!options.bower) {
         negatedVendors = negatedVendors.concat(negateMiniMatch(options.bower));
-        options.files.vendor = $.mainBowerFiles({
-            read: false
-        }).concat(options.files.vendor);
+        var bowerFiles;
+        try {
+            bowerFiles = $.mainBowerFiles({
+                read: false
+            });
+        }catch (e){
+            $.util.log($.util.colors.magenta('WARNING!!!'), e);
+            bowerFiles = [];
+        }
+        options.files.vendor = bowerFiles.concat(options.files.vendor);
     }
 
     options.files.jsNoVendor = options.files.js.concat(negatedVendors);
